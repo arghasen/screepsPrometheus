@@ -12,19 +12,19 @@ server.listen(config.webserver.port);
 
 const Prometheus = require('prom-client');
 Prometheus.collectDefaultMetrics({ timeout: 10000 }); // collects RAM usage etc every 10 s
-const httpRequestDurationMilliseconds = new Prometheus.Histogram({
-  name: config.prometheusPrefix+'http_request_duration_ms',
-  help: 'Duration of HTTP requests in ms',
-  labelNames: ['route'],
+// const httpRequestDurationMilliseconds = new Prometheus.Histogram({
+  // name: config.prometheusPrefix+'http_request_duration_ms',
+  // help: 'Duration of HTTP requests in ms',
+  // labelNames: ['route'],
   // buckets for response time from 0.1ms to 500ms
-  buckets: [0.10, 5, 15, 50, 100, 200, 300, 400, 500]
-});
+  // buckets: [0.10, 5, 15, 50, 100, 200, 300, 400, 500]
+// });
 const promStats = {
-	memory_used: new Prometheus.Gauge({
-		name: config.prometheusPrefix+'memory_used',
-		help: "How much memory is in use",
-		labelNames: ['route'],
-	}),
+	// memory_used: new Prometheus.Gauge({
+		// name: config.prometheusPrefix+'memory_used',
+		// help: "How much memory is in use",
+		// labelNames: ['route'],
+	// }),
 	// memory_used: new Prometheus.Gauge({
 		// name: config.prometheusPrefix+'memory_used',
 		// help: "How much memory is in use",
@@ -32,6 +32,88 @@ const promStats = {
 	// }),
 	
 }
+promStats.cpu_usage = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "cpu_usage",
+	help: "Per tick CPU usage in ms",
+	labelNames: ["user", "shard"],
+});
+promStats.cpu_bucket = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "cpu_bucket",
+	help: "Stored CPU",
+	labelNames: ["user", "shard"],
+});
+promStats.gcl_level = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "gcl_level",
+	help: "current GCL level",
+	labelNames: ["user", "shard"],
+});
+promStats.gcl_progress = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "gcl_progress",
+	help: "GCL progress towards next level",
+	labelNames: ["user", "shard"],
+});
+promStats.credits = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "credits",
+	help: "Credit balance in account",
+	labelNames: ["user", "shard"],
+});
+promStats.order_count = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "order_count",
+	help: "Number of active market orders",
+	labelNames: ["user", "shard"],
+});
+promStats.memory_used = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "memory_used",
+	help: "Memory used by screeps script",
+	labelNames: ["user", "shard"],
+});
+// room specific metrics
+promStats.room_controller_level = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_controller_level",
+	help: "Room controller level",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_controller_progress = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_controller_progress",
+	help: "Room controller progress",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_controller_progress_needed = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_controller_progress_needed",
+	help: "Room controller progress needed for upgrade",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_controller_downgrade = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_controller_downgrade",
+	help: "Room controller ticks to downgrade",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_energy_available = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_energy_available",
+	help: "Amount of energy in spawn and extensions available for spawning",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_energy_cap = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_energy_cap",
+	help: "Maximum amount of energy in spawn and extensions",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_source_energy = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_source_energy",
+	help: "Energy in room sources",
+	labelNames: ["user", "shard", "roomName"],
+});
+promStats.room_mineral_amount = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_mineral_amount",
+	help: "Amount of minerals in the rooms deposit",
+	labelNames: ["user", "shard", "roomName", "mineral_type"],
+});
+promStats.room_storage_energy = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "room_storage_energy",
+	help: "Amount of energy in room storage",
+	labelNames: ["user", "shard", "roomName"],
+});
+
 
 const api = new ScreepsAPI({
   token: config.token,
@@ -56,90 +138,9 @@ api.socket.on('auth',async function(event){
 	console.log("Authenticated");
 	let userData = await api.me();
 	console.log(userData)
+	
 	api.socket.subscribe('console', event => {
 		// console.log(event.data.messages.log); // List of console.log output for tick
-	});
-	
-	promStats.cpu_usage = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "cpu_usage",
-		help: "Per tick CPU usage in ms",
-		labelNames: ["user", "shard"],
-	});
-	promStats.cpu_bucket = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "cpu_bucket",
-		help: "Stored CPU",
-		labelNames: ["user", "shard"],
-	});
-	promStats.gcl_level = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "gcl_level",
-		help: "current GCL level",
-		labelNames: ["user", "shard"],
-	});
-	promStats.gcl_progress = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "gcl_progress",
-		help: "GCL progress towards next level",
-		labelNames: ["user", "shard"],
-	});
-	promStats.credits = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "credits",
-		help: "Credit balance in account",
-		labelNames: ["user", "shard"],
-	});
-	promStats.order_count = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "order_count",
-		help: "Number of active market orders",
-		labelNames: ["user", "shard"],
-	});
-	promStats.memory_used = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "memory_used",
-		help: "Memory used by screeps script",
-		labelNames: ["user", "shard"],
-	});
-	// room specific metrics
-	promStats.room_controller_level = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_controller_level",
-		help: "Room controller level",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_controller_progress = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_controller_progress",
-		help: "Room controller progress",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_controller_progress_needed = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_controller_progress_needed",
-		help: "Room controller progress needed for upgrade",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_controller_downgrade = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_controller_downgrade",
-		help: "Room controller ticks to downgrade",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_energy_available = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_energy_available",
-		help: "Amount of energy in spawn and extensions available for spawning",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_energy_cap = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_energy_cap",
-		help: "Maximum amount of energy in spawn and extensions",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_source_energy = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_source_energy",
-		help: "Energy in room sources",
-		labelNames: ["user", "shard", "roomName"],
-	});
-	promStats.room_mineral_amount = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_mineral_amount",
-		help: "Amount of minerals in the rooms deposit",
-		labelNames: ["user", "shard", "roomName", "mineral_type"],
-	});
-	promStats.room_storage_energy = new Prometheus.Gauge({
-		name: config.prometheusPrefix + "room_storage_energy",
-		help: "Amount of energy in room storage",
-		labelNames: ["user", "shard", "roomName"],
 	});
 	
 	setInterval(async function(){
