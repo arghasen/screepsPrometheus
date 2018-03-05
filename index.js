@@ -11,7 +11,7 @@ let server = http.createServer((req,res) => {
 server.listen(config.webserver.port);
 
 const Prometheus = require('prom-client');
-Prometheus.collectDefaultMetrics({ timeout: 10000 }); // collects RAM usage etc every 10 s
+Prometheus.collectDefaultMetrics({ timeout: 10000 }); // collects RAM used etc every 10 s
 // const httpRequestDurationMilliseconds = new Prometheus.Histogram({
   // name: config.prometheusPrefix+'http_request_duration_ms',
   // help: 'Duration of HTTP requests in ms',
@@ -32,9 +32,9 @@ const promStats = {
 	// }),
 	
 }
-promStats.cpu_usage = new Prometheus.Gauge({
-	name: config.prometheusPrefix + "cpu_usage",
-	help: "Per tick CPU usage in ms",
+promStats.cpu_used = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "cpu_used",
+	help: "Per tick CPU used in ms",
 	labelNames: ["user", "shard"],
 });
 promStats.cpu_bucket = new Prometheus.Gauge({
@@ -149,9 +149,9 @@ api.socket.on('auth',async function(event){
 		// promStats.memory_used.set(memory.data.memory.used);
 		console.log(JSON.stringify(memory, null, 4))
 		// recursiveGaugeGenerator(memory.data);
-		promStats.cpu_usage
+		promStats.cpu_used
 			.labels(userData.username, config.shard)
-			.set(memory.data.cpu.usage || 0);
+			.set(memory.data.cpu.used || 0);
 		promStats.cpu_bucket
 			.labels(userData.username, config.shard)
 			.set(memory.data.cpu.bucket || 0);
