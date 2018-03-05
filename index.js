@@ -1,7 +1,7 @@
 const fs = require("fs");
 const {ScreepsAPI} = require("screeps-api");
 
-const config = require("config/config.js");
+const config = require("./config/config.js");
 
 const http = require("http");
 let server = http.createServer((req,res) => {
@@ -51,23 +51,156 @@ api.socket.on('connected',()=>{
     // Do stuff after conntected
 	console.log("Connected")
 })
-api.socket.on('auth',(event)=>{
+api.socket.on('auth',async function(event){
     // Do stuff after auth
 	console.log("Authenticated");
-	
+	let userData = await api.me();
+	console.log(userData)
 	api.socket.subscribe('console', event => {
 		// console.log(event.data.messages.log); // List of console.log output for tick
 	});
 	
-	api.socket.subscribe('memory',(event)=>{
-		console.log('stats',event.data);
+	promStats.cpu_usage = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "cpu_usage",
+		help: "Per tick CPU usage in ms",
+		labelNames: ["user", "shard"],
 	});
+	promStats.cpu_bucket = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "cpu_bucket",
+		help: "Stored CPU",
+		labelNames: ["user", "shard"],
+	});
+	promStats.gcl_level = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "gcl_level",
+		help: "current GCL level",
+		labelNames: ["user", "shard"],
+	});
+	promStats.gcl_progress = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "gcl_progress",
+		help: "GCL progress towards next level",
+		labelNames: ["user", "shard"],
+	});
+	promStats.credits = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "credits",
+		help: "Credit balance in account",
+		labelNames: ["user", "shard"],
+	});
+	promStats.order_count = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "order_count",
+		help: "Number of active market orders",
+		labelNames: ["user", "shard"],
+	});
+	promStats.memory_used = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "memory_used",
+		help: "Memory used by screeps script",
+		labelNames: ["user", "shard"],
+	});
+	// room specific metrics
+	promStats.room_controller_level = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_controller_level",
+		help: "Room controller level",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_controller_progress = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_controller_progress",
+		help: "Room controller progress",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_controller_progress_needed = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_controller_progress_needed",
+		help: "Room controller progress needed for upgrade",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_controller_downgrade = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_controller_downgrade",
+		help: "Room controller ticks to downgrade",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_energy_available = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_energy_available",
+		help: "Amount of energy in spawn and extensions available for spawning",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_energy_cap = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_energy_cap",
+		help: "Maximum amount of energy in spawn and extensions",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_source_energy = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_source_energy",
+		help: "Energy in room sources",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	promStats.room_mineral_amount = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_mineral_amount",
+		help: "Amount of minerals in the rooms deposit",
+		labelNames: ["user", "shard", "roomName", "mineral_type"],
+	});
+	promStats.room_storage_energy = new Prometheus.Gauge({
+		name: config.prometheusPrefix + "room_storage_energy",
+		help: "Amount of energy in room storage",
+		labelNames: ["user", "shard", "roomName"],
+	});
+	
 	setInterval(async function(){
 		let memory = await getMemory(config.shard);
 		
 		// promStats.memory_used.set(memory.data.memory.used);
-		console.log(JSON.stringify(memory, 4))
-		recursiveGaugeGenerator(memory.data);
+		console.log(JSON.stringify(memory, null, 4))
+		// recursiveGaugeGenerator(memory.data);
+		
+		promStats.cpu_usage
+			.labels(userData.username, config.shard)
+			.set(memory.data.cpu.usage);
+		promStats.cpu_bucket
+			.labels(userData.username, config.shard)
+			.set(memory.data.cpu.bucket);
+		promStats.gcl_level
+			.labels(userData.username, config.shard)
+			.set(memory.data.gcl.level);
+		promStats.gcl_progress
+			.labels(userData.username, config.shard)
+			.set(memory.data.gcl.progress);
+		promStats.credits
+			.labels(userData.username, config.shard)
+			.set(memory.data.market.credits);
+		promStats.order_count
+			.labels(userData.username, config.shard)
+			.set(memory.data.market.num_orders);
+		promStats.memory_used
+			.labels(userData.username, config.shard)
+			.set(memory.data.memory.used);
+		for(let roomName in memory.data.roomSummary){
+			promStats.room_controller_level
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].controller_level);
+			promStats.room_controller_progress
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].controller_progress);
+			promStats.room_controller_progress_needed
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].controller_progress_needed);
+			promStats.room_controller_downgrade
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].controller_downgrade);
+			promStats.room_energy_available
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].energy_avail);
+			promStats.room_energy_cap
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].energy_cap);
+			promStats.room_source_energy
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].source_energy);
+			promStats.room_source_energy
+				.labels(userData.username, config.shard, roomName, memory.data.roomSummary[roomName].mineral_type)
+				.set(memory.data.roomSummary[roomName].mineral_amount);
+			promStats.room_storage_energy
+				.labels(userData.username, config.shard, roomName)
+				.set(memory.data.roomSummary[roomName].storage_energy);
+			
+		}
+		
 		
 	}, config.scanInterval);
 });
