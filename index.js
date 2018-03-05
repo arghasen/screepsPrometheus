@@ -149,59 +149,57 @@ api.socket.on('auth',async function(event){
 		// promStats.memory_used.set(memory.data.memory.used);
 		console.log(JSON.stringify(memory, null, 4))
 		// recursiveGaugeGenerator(memory.data);
-		
 		promStats.cpu_usage
 			.labels(userData.username, config.shard)
-			.set(memory.data.cpu.usage);
+			.set(memory.data.cpu.usage || 0);
 		promStats.cpu_bucket
 			.labels(userData.username, config.shard)
-			.set(memory.data.cpu.bucket);
+			.set(memory.data.cpu.bucket || 0);
 		promStats.gcl_level
 			.labels(userData.username, config.shard)
-			.set(memory.data.gcl.level);
+			.set(memory.data.gcl.level || 0);
 		promStats.gcl_progress
 			.labels(userData.username, config.shard)
-			.set(memory.data.gcl.progress);
+			.set(memory.data.gcl.progress || 0);
 		promStats.credits
 			.labels(userData.username, config.shard)
-			.set(memory.data.market.credits);
+			.set(memory.data.market.credits || 0);
 		promStats.order_count
 			.labels(userData.username, config.shard)
-			.set(memory.data.market.num_orders);
+			.set(memory.data.market.num_orders || 0);
 		promStats.memory_used
 			.labels(userData.username, config.shard)
-			.set(memory.data.memory.used);
+			.set(memory.data.memory.used || 0);
 		for(let roomName in memory.data.roomSummary){
 			promStats.room_controller_level
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].controller_level);
+				.set(memory.data.roomSummary[roomName].controller_level || 0);
 			promStats.room_controller_progress
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].controller_progress);
+				.set(memory.data.roomSummary[roomName].controller_progress || 0);
 			promStats.room_controller_progress_needed
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].controller_progress_needed);
+				.set(memory.data.roomSummary[roomName].controller_progress_needed || 0);
 			promStats.room_controller_downgrade
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].controller_downgrade);
+				.set(memory.data.roomSummary[roomName].controller_downgrade || 0);
 			promStats.room_energy_available
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].energy_avail);
+				.set(memory.data.roomSummary[roomName].energy_avail || 0);
 			promStats.room_energy_cap
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].energy_cap);
+				.set(memory.data.roomSummary[roomName].energy_cap || 0);
 			promStats.room_source_energy
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].source_energy);
-			promStats.room_source_energy
+				.set(memory.data.roomSummary[roomName].source_energy || 0);
+			promStats.room_mineral_amount
 				.labels(userData.username, config.shard, roomName, memory.data.roomSummary[roomName].mineral_type)
-				.set(memory.data.roomSummary[roomName].mineral_amount);
+				.set(memory.data.roomSummary[roomName].mineral_amount || 0);
 			promStats.room_storage_energy
 				.labels(userData.username, config.shard, roomName)
-				.set(memory.data.roomSummary[roomName].storage_energy);
+				.set(memory.data.roomSummary[roomName].storage_energy || 0);
 			
 		}
-		
 		
 	}, config.scanInterval);
 });
