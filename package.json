@@ -1,0 +1,29 @@
+{
+  "name": "screepsprometheus",
+  "version": "1.0.0",
+  "description": "Pulls data from your screeps memory and provides it to a prometheus tsdb.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Danielv123/screepsPrometheus.git"
+  },
+  "keywords": [
+    "prometheus",
+    "screeps",
+    "statistics",
+    "metrics"
+  ],
+  "author": "Daniel Vestøl",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Danielv123/screepsPrometheus/issues"
+  },
+  "homepage": "https://github.com/Danielv123/screepsPrometheus#readme",
+  "dependencies": {
+    "prom-client": "^10.2.3",
+    "screeps-api": "^1.4.0"
+  }
+}
