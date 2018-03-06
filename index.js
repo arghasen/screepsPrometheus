@@ -52,6 +52,11 @@ promStats.gcl_progress = new Prometheus.Gauge({
 	help: "GCL progress towards next level",
 	labelNames: ["user", "shard"],
 });
+promStats.gcl_progress_total = new Prometheus.Gauge({
+	name: config.prometheusPrefix + "gcl_progress_total",
+	help: "GCL progress needed for next level",
+	labelNames: ["user", "shard"],
+});
 promStats.credits = new Prometheus.Gauge({
 	name: config.prometheusPrefix + "credits",
 	help: "Credit balance in account",
@@ -161,6 +166,9 @@ api.socket.on('auth',async function(event){
 		promStats.gcl_progress
 			.labels(userData.username, config.shard)
 			.set(memory.data.gcl.progress || 0);
+		promStats.gcl_progress_total
+			.labels(userData.username, config.shard)
+			.set(memory.data.gcl.progress_total || 0);
 		promStats.credits
 			.labels(userData.username, config.shard)
 			.set(memory.data.market.credits || 0);
