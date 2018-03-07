@@ -152,7 +152,7 @@ api.socket.on('auth',async function(event){
 		let memory = await getMemory(config.shard);
 		
 		// promStats.memory_used.set(memory.data.memory.used);
-		console.log(JSON.stringify(memory, null, 4))
+		// console.log(JSON.stringify(memory, null, 4))
 		// recursiveGaugeGenerator(memory.data);
 		promStats.cpu_used
 			.labels(userData.username, config.shard)
@@ -214,7 +214,7 @@ api.socket.on('auth',async function(event){
 function recursiveGaugeGenerator(object, keyPrefix = ""){
 	for(let key in object){
 		let entry = object[key];
-		console.log(keyPrefix+key)
+		// console.log(keyPrefix+key)
 		if(typeof entry === "object" && !Array.isArray(entry)){
 			recursiveGaugeGenerator(entry, keyPrefix + key + "_"); // recurse
 		} else if(typeof entry === "number"){
