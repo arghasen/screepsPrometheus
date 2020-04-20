@@ -4,7 +4,7 @@
 2) Modify the values to work with your account.
 
 ## Sample Memory
-```
+```json
 {
   "cpu": {
     "used": 2.095324299999902,
