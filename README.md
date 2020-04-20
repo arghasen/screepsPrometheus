@@ -3,6 +3,8 @@
 1) Copy 'config.template.js' to 'config.js'.
 2) Modify the values to work with your account.
 
+See [screeps-prometheus-game](https://github.com/BrainWart/screeps-prometheus-game) for examples creating the memory layout
+
 ## Sample Memory
 ```json
 {
