@@ -12,7 +12,8 @@ FROM node:13-alpine
 
 WORKDIR /screepsPrometheus
 COPY --from=BUILD_IMAGE /screepsPrometheus/node_modules ./node_modules
-COPY README.md LICENSE src/ ./
+COPY README.md LICENSE ./
+COPY src ./src
 
 LABEL maintainer "danielv@live.no"
 EXPOSE 8081
