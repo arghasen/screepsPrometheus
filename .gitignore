@@ -58,4 +58,4 @@ typings/
 .env
 
 # User configuration file
-config/config.js
+src/config/config.js
