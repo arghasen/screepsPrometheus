@@ -1,16 +1,15 @@
 const fs = require("fs");
 const {ScreepsAPI} = require("screeps-api");
-
+const Prometheus = require('prom-client');
 const config = require("./config/config.js");
-
 const http = require("http");
+
 let server = http.createServer((req,res) => {
 	// res.set('Content-Type', Prometheus.register.contentType);
 	res.end(Prometheus.register.metrics());
 });
 server.listen(config.webserver.port);
 
-const Prometheus = require('prom-client');
 Prometheus.collectDefaultMetrics({ timeout: 10000 }); // collects RAM used etc every 10 s
 // const httpRequestDurationMilliseconds = new Prometheus.Histogram({
   // name: config.prometheusPrefix+'http_request_duration_ms',
