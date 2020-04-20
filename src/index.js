@@ -39,8 +39,8 @@ function recursiveGauge(obj, prefix, labels) {
                 help: metricHelp,
                 labelNames: Object.keys(labels),
               });
-			}
-			
+            }
+
             prometheusStats[metricName].set(labels, metricValue);
             break;
           default:
@@ -74,9 +74,13 @@ api.socket.on("connected", () => {
 
 async function updateStats() {
   console.log("Updating");
-  let memory = (await api.memory.get(config.memorySegment, config.shard)).data;
 
-  recursiveGauge(memory, config.prometheusPrefix, { shard: config.shard });
+  for (const currentShard of config.shards) {
+    let memory = (await api.memory.get(config.memorySegment, currentShard))
+      .data;
+
+    recursiveGauge(memory, config.prometheusPrefix, { shard: currentShard });
+  }
 }
 
 api.socket.on("auth", async function (event) {
