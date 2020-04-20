@@ -28,7 +28,7 @@ function recursiveGauge(obj, prefix, labels) {
             );
             break;
           case "gauge":
-            const metricName = prefix;
+            const metricName = `${prefix}_${key}`;
             const metricValue = obj[key].value || 0;
             const metricHelp =
               obj[key].help == null ? "no help" : obj[key].help;
@@ -53,13 +53,13 @@ function recursiveGauge(obj, prefix, labels) {
     } else {
       // Handle stats with no definition
       recursiveGauge(
-        [
-          {
+        {
+          [key]: {
             promStat: "gauge",
             value: obj[key],
           },
-        ],
-        `${prefix}_${key}`,
+        },
+        prefix,
         labels
       );
     }
@@ -77,8 +77,8 @@ async function updateStats() {
 
   for (const currentShard of config.shards) {
     let memory = (await api.memory.get(config.memorySegment, currentShard))
-      .data;
-
+    .data;
+    
     recursiveGauge(memory, config.prometheusPrefix, { shard: currentShard });
   }
 }
