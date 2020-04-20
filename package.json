@@ -18,6 +18,9 @@
     "metrics"
   ],
   "author": "Daniel Vestøl",
+  "contributors": [
+    "Cody McGinnis <brainwart@gmail.com>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Danielv123/screepsPrometheus/issues"
