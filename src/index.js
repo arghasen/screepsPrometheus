@@ -5,13 +5,7 @@ const http = require("http");
 
 Prometheus.collectDefaultMetrics({ timeout: 10000 });
 
-const api = new ScreepsAPI({
-  token: config.token,
-  protocol: "https",
-  hostname: "screeps.com",
-  port: 443,
-  path: "/", // Do not include '/api', it will be added automatically
-});
+const api = new ScreepsAPI(config.api);
 
 const prometheusStats = {};
 
