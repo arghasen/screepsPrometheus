@@ -5,14 +5,8 @@ const http = require("http");
 
 Prometheus.collectDefaultMetrics({ timeout: 10000 });
 
-const api = new ScreepsAPI({
-  token: config.token,
-  protocol: "https",
-  hostname: "screeps.com",
-  port: 443,
-  path: "/", // Do not include '/api', it will be added automatically
-});
 
+//api.auth("argha","pagla")
 const prometheusStats = {};
 
 function recursiveGauge(obj, prefix, labels) {
@@ -66,13 +60,20 @@ function recursiveGauge(obj, prefix, labels) {
   }
 }
 
-api.socket.connect();
+const api = ScreepsAPI.fromConfig('main')
+    .then((api)=>{
+        api.socket.connect()
+        api.socket.on("connected", () => {
+        console.log("Connected");
+        });
+        api.socket.on("auth", async function (event) {
+        console.log("Authenticated");
 
-api.socket.on("connected", () => {
-  console.log("Connected");
-});
-
-async function updateStats() {
+        setInterval(updateStats, config.scanInterval, api);
+        await updateStats(api);
+    })
+    })
+async function updateStats(api) {
   console.log("Updating");
 
   for (const currentShard of config.shards) {
@@ -83,12 +84,6 @@ async function updateStats() {
   }
 }
 
-api.socket.on("auth", async function (event) {
-  console.log("Authenticated");
-
-  setInterval(updateStats, config.scanInterval);
-  await updateStats();
-});
 
 let server = http.createServer((req, res) => {
   res.end(Prometheus.register.metrics());
